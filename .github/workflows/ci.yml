@@ -1,0 +1,34 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build app image (jika ada app/Dockerfile)
+        id: build
+        run: |
+          if [ -f app/Dockerfile ]; then
+            docker build -t app:ci ./app
+            echo "image=app:ci" >> "$GITHUB_OUTPUT"
+          else
+            echo "Belum ada app/Dockerfile — memakai image target untuk smoke test."
+            docker pull bkimminich/juice-shop
+            echo "image=bkimminich/juice-shop" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Smoke test
+        run: |
+          docker run -d --rm -p 3000:3000 --name app "${{ steps.build.outputs.image }}"
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && ok=1 && break || sleep 3
+          done
+          docker stop app || true
+          if [ "${ok:-0}" != "1" ]; then echo "App tidak merespons"; exit 1; fi
+          echo "App up ✅"

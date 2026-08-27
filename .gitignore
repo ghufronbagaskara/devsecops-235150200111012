@@ -1,0 +1,23 @@
+# Secret & environment
+.env
+*.env
+!.env.example
+
+# Dependencies / build
+node_modules/
+dist/
+build/
+
+# Source pihak ketiga yang di-clone untuk dipindai (jangan commit)
+target-src/
+*-target/
+
+# Log & sementara
+*.log
+tmp/
+.DS_Store
+
+# Output scan boleh di-commit ke labs/<LK>/ secara sadar; berikut hanya contoh yang di-ignore bila di root
+/trivy-*.json
+/semgrep.json
+/gitleaks.json
