@@ -1,17 +1,17 @@
-LK01 - Setup Toolchain: Docker & GitHub
+### LK01 - Setup Toolchain: Docker & GitHub
 
 Nama: Ghufron Bagaskara
 NIM: 235150200111012
 Watermark: ds-235150200111012
 
 
-Versi perkakas yang dipakai:
+### Versi tools yang dipakai:
 Docker Engine 28.4.0 (build d8eb465)
 Docker Compose v2.39.4-desktop.1
 Git 2.45.2.windows.1
 
 
----
+### Pengerjaan 
 
 Langkah B - Instalasi Docker
 
@@ -51,7 +51,7 @@ Repo devsecops-235150200111012 di organisasi Devsecops-Filkom-2026 sudah di-clon
 
 ---
 
-Refleksi
+### Refleksi
 
 Dua digit terakhir NIM saya 12, jadi Primary OWASP A03 dan Secondary A02. Pembagian fokus ini masuk akal karena kalau semua orang pakai langkah yang sama dan menghasilkan file identik, perbedaan fokus OWASP itulah yang bikin analisis tiap orang tidak bisa dipertukarkan.
 
@@ -63,16 +63,6 @@ Untuk image php:8.3-apache, dokumen root default container ada di /var/www/html.
 
 Watermark ds-235150200111012 sudah disertakan di hello.php, index.php, dan terlihat di halaman browser saat screenshot diambil.
 
-
----
-
-Checklist submit:
-- docker run hello-world berhasil
-- Container nginx jalan + bukti-nginx.png tersedia
-- hello.php berjalan via php:8.3-cli
-- index.php tampil di browser via php:8.3-apache + bukti-php.png (memuat watermark)
-- Repo devsecops-235150200111012 bisa diakses & IDENTITY.md terisi
-- git push berhasil
 
 
 Dikerjakan oleh Ghufron Bagaskara (235150200111012) - WM ds-235150200111012
