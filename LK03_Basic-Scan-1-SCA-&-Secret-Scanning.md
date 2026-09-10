@@ -254,6 +254,18 @@ dampaknya bila berisi daftar dependensi lengkap beserta versinya.
 
 ---
 
+**Patokan hasil.** Dengan `--depth 200`, angka yang wajar muncul kira-kira seperti ini (persisnya akan
+berbeda tergantung kedalaman clone dan versi repo saat Anda mengunduh):
+
+| Pemindaian | Perkiraan jumlah temuan |
+|---|---|
+| Trivy filesystem (HIGH+CRITICAL) | sekitar 45–50 |
+| Gitleaks mode histori | ratusan hingga seribuan |
+| Gitleaks mode worktree | puluhan |
+
+Selisih besar antara histori dan worktree itulah inti pelajarannya. Jika angka Anda jauh berbeda —
+misalnya nol — periksa lagi langkah C.1 dan kedalaman clone di B.1.
+
 ## Bagian G — Triage dan prioritisasi
 
 Scanner menghasilkan daftar mentah. Tugas Anda adalah mengubahnya menjadi keputusan.
