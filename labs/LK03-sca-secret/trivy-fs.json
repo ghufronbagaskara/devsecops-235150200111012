@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.73.0"
+  },
+  "ReportID": "01a089f9-4b58-7ca8-ba1d-25b7471ecdae",
+  "CreatedAt": "2026-09-10T06:20:11.480838082Z",
+  "ArtifactID": "sha256:5ac34b8047f441a2608588b0c66491b0ed06d2ed215879b6e69ae2b7340bfbed",
+  "ArtifactName": "/app/ds-235150200111012-target",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "https://github.com/juice-shop/juice-shop.git",
+    "Branch": "master",
+    "Commit": "1618a611b173b4bf114028e6e02549950606e29d",
+    "CommitMsg": "📸 Update bundle analysis screenshot\n\nSigned-off-by: GitHub Action \u003caction@github.com\u003e",
+    "Author": "GitHub Action \u003caction@github.com\u003e",
+    "Committer": "GitHub Action \u003caction@github.com\u003e"
+  }
+}
