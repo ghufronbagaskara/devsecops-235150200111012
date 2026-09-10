@@ -1,0 +1,4 @@
+id,judul,kategori_owasp,cwe,severity,likelihood,impact,cvss_base,cvss_vector,epss,bukti,rekomendasi,status,keputusan
+VA-01,SQLi pada login,A03,CWE-89,High,High,High,9.8,CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H,,labs/LK06-exploit/bukti/sqli-login.png,parameterized query,open,
+VA-02,Stored XSS pada komentar,A03,CWE-79,Medium,Medium,High,6.1,,,labs/LK06-exploit/bukti/xss.png,output encoding+CSP,open,
+VA-03,Komponen usang,A06,CWE-1104,High,Medium,High,7.5,,,labs/LK03-sca-secret/trivy-fs.json,update dependency,open,

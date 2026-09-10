@@ -1,0 +1,16 @@
+name: validate
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Autograding kelengkapan repo (bukan penilaian akhir). Menegur bila IDENTITY belum diisi,
+# watermark tak ada, atau struktur folder belum dibuat.
+
+jobs:
+  completeness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Jalankan validasi
+        run: bash scripts/validate.sh

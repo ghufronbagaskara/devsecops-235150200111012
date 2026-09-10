@@ -1,0 +1,30 @@
+name: DAST
+on:
+  pull_request:
+  workflow_dispatch:      # jalankan manual agar tidak menghambat setiap push
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start app (ephemeral)
+        run: |
+          docker run -d --rm -p 3000:3000 --name app bkimminich/juice-shop
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000 > /dev/null && break || sleep 3
+          done
+
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          fail_action: true            # gagalkan bila melewati ambang
+          allow_issue_writing: false
+          cmd_options: '-a'
+
+      - name: Teardown
+        if: always()
+        run: docker stop app || true

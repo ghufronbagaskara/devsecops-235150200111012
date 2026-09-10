@@ -1,0 +1,8 @@
+# ZAP alert rules — kelola false positive secara TERDOKUMENTASI (IGNORE/WARN/FAIL).
+# Format: <ruleId>\t<action>\t<url-regex-atau-kosong>\t# komentar
+# Contoh (sesuaikan setelah meninjau laporan ZAP Anda):
+10096	IGNORE		# Timestamp Disclosure - noise di lingkungan lab
+10027	IGNORE		# Information Disclosure - Suspicious Comments (dev build)
+10021	WARN		# X-Content-Type-Options Header Missing
+10020	WARN		# Missing Anti-clickjacking Header
+# Biarkan sisanya default (FAIL untuk risiko tinggi). Jangan mematikan semua alert.

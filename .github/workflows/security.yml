@@ -1,0 +1,49 @@
+name: Security
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+# Catatan: SARIF diunggah sebagai ARTIFACT (bukan Code Scanning), agar berjalan di repo private
+# tanpa GitHub Advanced Security. Bila GHAS tersedia, boleh ganti ke upload-sarif.
+
+jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Gitleaks (via image resmi, tanpa lisensi)
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source=/repo --report-format json --report-path=/repo/gitleaks.json --redact
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: gitleaks-report, path: gitleaks.json }
+
+  sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy filesystem (SCA) — GATE
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: '1'          # gagalkan bila ada temuan tinggi
+          ignore-unfixed: true
+          format: table
+
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep (OWASP Top 10) → SARIF
+        run: |
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep \
+            semgrep --config p/owasp-top-ten --sarif -o semgrep.sarif || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: semgrep-sarif, path: semgrep.sarif }
