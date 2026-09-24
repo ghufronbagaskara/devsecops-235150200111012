@@ -3,13 +3,11 @@
 > **Minggu 3 · Sub-CPMK-3, Sub-CPMK-4 · Bobot 2% · Durasi 2×50 menit (2 SKS kelas hands-on; dilanjutkan mandiri) · Individu**
 
 ## Tujuan
-
 Memindai **dependensi** (Software Composition Analysis) dan **secret** pada aplikasi rentan,
 membaca serta men-triage hasilnya, lalu memetakan temuan ke **OWASP Top 10** — terutama
 A06 (komponen usang/rentan) dan A02/A05 (kredensial bocor & salah konfigurasi).
 
 ## Prasyarat
-
 - LK01 dan LK02 selesai (Docker jalan, repo `devsecops-<nim>` sudah di-clone).
 - `project/IDENTITY.md` sudah diisi (NIM, watermark, fokus OWASP).
 
@@ -23,7 +21,6 @@ dependensi bisa membawa dependensi lain lagi (disebut **transitive dependency**)
 perintah install bisa menarik ratusan paket yang tidak pernah kita baca kodenya.
 
 ### A.1 Apa itu SCA
-
 **Software Composition Analysis** adalah proses mendata seluruh komponen yang dipakai aplikasi, lalu
 mencocokkan nama dan versinya dengan basis data kerentanan publik. Kalau versi yang kita pakai masuk
 rentang yang diketahui rentan, scanner melaporkannya.
@@ -38,26 +35,24 @@ manifest (package.json / package-lock.json)  ->  daftar komponen + versi
 
 Istilah yang akan sering muncul:
 
-| Istilah              | Arti                                                                 |
-| -------------------- | -------------------------------------------------------------------- |
-| CVE                  | Nomor identitas unik sebuah kerentanan publik, mis. `CVE-2021-44228` |
-| CVSS                 | Skor keparahan 0.0–10.0; dipetakan ke LOW / MEDIUM / HIGH / CRITICAL |
-| Fixed version        | Versi yang sudah menambal kerentanan tersebut                        |
-| Unfixed              | Kerentanan yang belum ada perbaikannya dari pembuat pustaka          |
-| Direct vs transitive | Dependensi yang kita pasang sendiri, vs yang ikut terbawa            |
+| Istilah | Arti |
+|---|---|
+| CVE | Nomor identitas unik sebuah kerentanan publik, mis. `CVE-2021-44228` |
+| CVSS | Skor keparahan 0.0–10.0; dipetakan ke LOW / MEDIUM / HIGH / CRITICAL |
+| Fixed version | Versi yang sudah menambal kerentanan tersebut |
+| Unfixed | Kerentanan yang belum ada perbaikannya dari pembuat pustaka |
+| Direct vs transitive | Dependensi yang kita pasang sendiri, vs yang ikut terbawa |
 
 ### A.2 Dua sasaran SCA yang berbeda
-
 Yang sering membingungkan pemula: satu aplikasi bisa dipindai dari **dua sudut**, dan hasilnya
 memang berbeda. Keduanya diperlukan.
 
-| Sasaran                 | Yang diperiksa                                            | Contoh temuan                           |
-| ----------------------- | --------------------------------------------------------- | --------------------------------------- |
-| **Filesystem / source** | dependensi aplikasi dari `package-lock.json`              | pustaka npm versi rentan                |
-| **Container image**     | paket sistem operasi di dalam image + dependensi aplikasi | `openssl`, `zlib`, `busybox` versi lama |
+| Sasaran | Yang diperiksa | Contoh temuan |
+|---|---|---|
+| **Filesystem / source** | dependensi aplikasi dari `package-lock.json` | pustaka npm versi rentan |
+| **Container image** | paket sistem operasi di dalam image + dependensi aplikasi | `openssl`, `zlib`, `busybox` versi lama |
 
 ### A.3 Apa itu secret scanning
-
 **Secret** adalah kredensial: kunci API, token, password, private key. Secret yang ter-commit ke
 repositori berbahaya karena siapa pun yang bisa membaca repo (atau histori-nya) bisa memakainya.
 
@@ -69,20 +64,20 @@ menghapus barisnya.
 
 ### A.4 Perkakas yang dipakai
 
-| Tool               | Fungsi                                 | Image Docker           |
-| ------------------ | -------------------------------------- | ---------------------- |
-| Trivy              | SCA dependensi + scan image container  | `aquasec/trivy`        |
-| Grype (alternatif) | SCA dependensi                         | `anchore/grype`        |
-| Gitleaks           | Secret scanning (berkas + histori git) | `zricethezav/gitleaks` |
+| Tool | Fungsi | Image Docker |
+|---|---|---|
+| Trivy | SCA dependensi + scan image container | `aquasec/trivy` |
+| Grype (alternatif) | SCA dependensi | `anchore/grype` |
+| Gitleaks | Secret scanning (berkas + histori git) | `zricethezav/gitleaks` |
 
 ---
 
 ## Bagian B — Persiapan
 
 ### B.1 Siapkan folder luaran dan folder target ber-watermark
-
 Sesuai KEBIJAKAN, hasil scan harus membawa jejak identitas Anda. Caranya: clone source ke folder yang
-namanya memuat NIM, sehingga path di dalam berkas hasil scan ikut ter-watermark.
+namanya memuat NIM, lalu **mount folder itu ke nama yang sama di dalam container** (bukan ke `/src`),
+sehingga nama ber-NIM tersimpan di kolom `ArtifactName` pada berkas hasil scan.
 
 ```bash
 cd devsecops-<nim>                      # repo tugas Anda
@@ -95,7 +90,6 @@ yang pernah ada lalu dihapus. Dengan `--depth 1` histori-nya kosong dan bagian p
 secret scanning jadi hilang. Kalau koneksi lambat, `--depth 50` masih cukup untuk latihan.
 
 ### B.2 Pastikan folder target tidak ikut ter-commit
-
 Source pihak ketiga tidak boleh masuk repo tugas Anda.
 
 ```bash
@@ -103,9 +97,8 @@ grep -q '\-target/' .gitignore || printf '*-target/\n' >> .gitignore
 ```
 
 ### B.3 Siapkan cache Trivy (opsional tapi disarankan)
-
-Trivy mengunduh basis data kerentanan (±700 MB) saat pertama kali jalan. Dengan volume cache,
-unduhan itu dipakai ulang di scan berikutnya.
+Trivy mengunduh basis data kerentanan (±112 MB) saat pertama kali jalan. Dengan volume cache,
+unduhan itu dipakai ulang di scan berikutnya sehingga jauh lebih cepat.
 
 ```bash
 docker volume create trivy-cache
@@ -115,47 +108,82 @@ docker volume create trivy-cache
 
 ## Bagian C — SCA pada dependensi aplikasi (filesystem)
 
-Kita pindai folder source. Perhatikan pola mount: satu volume untuk **input** (`/src`) dan satu lagi
-untuk **output** (`/out`), supaya berkas hasil benar-benar tersimpan di laptop Anda.
+### C.1 Hasilkan lock file dulu (langkah wajib)
+Kalau langkah ini dilewati, Trivy akan melaporkan **`Not scanned`** dan tabel hasilnya kosong.
+
+Alasannya: repositori Juice Shop hanya menyertakan `package.json`, dan berkas itu berisi **rentang
+versi** seperti `^1.2.3` — bukan versi pasti. Scanner tidak bisa mencocokkan rentang ke basis data
+CVE. Yang dibutuhkan adalah **lock file** (`package-lock.json`) yang mencatat versi persis setiap
+paket, termasuk seluruh dependensi transitif.
+
+Buat lock file tanpa perlu mengunduh seluruh `node_modules`:
+
+```bash
+docker run --rm -v "$PWD/ds-<NIM>-target:/app" -w /app node:20-alpine \
+  npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+```
+
+| Opsi | Arti |
+|---|---|
+| `--package-lock-only` | hanya hitung dan tulis `package-lock.json`, tanpa memasang paket |
+| `--ignore-scripts` | jangan jalankan skrip dari paket pihak ketiga (lebih aman) |
+| `--no-audit --no-fund` | matikan output tambahan npm agar keluarannya bersih |
+
+Verifikasi berkasnya terbentuk (ukurannya ratusan KB):
+
+```bash
+ls -lh ds-<NIM>-target/package-lock.json
+```
+
+### C.2 Jalankan pemindaian
+Perhatikan pola mount: satu volume untuk **input** (folder ber-NIM Anda) dan satu lagi untuk
+**output** (`/out`), supaya berkas hasil benar-benar tersimpan di laptop Anda. Ganti `<NIM>` pada
+seluruh perintah dengan NIM Anda.
 
 ```bash
 docker run --rm \
-  -v "$PWD/ds-<NIM>-target:/src" \
+  -v "$PWD/ds-<NIM>-target:/ds-<NIM>-target" \
   -v "$PWD/labs/LK03-sca-secret:/out" \
   -v trivy-cache:/root/.cache/ \
   aquasec/trivy fs --scanners vuln \
   --severity HIGH,CRITICAL \
-  --format json -o /out/trivy-fs.json /src
+  --format json -o /out/trivy-fs.json /ds-<NIM>-target
 ```
 
 Arti opsinya:
 
-| Opsi                        | Arti                                            |
-| --------------------------- | ----------------------------------------------- |
-| `fs`                        | mode pindai filesystem/direktori                |
-| `--scanners vuln`           | hanya cari kerentanan (bukan misconfig/license) |
-| `--severity HIGH,CRITICAL`  | saring agar fokus ke yang berdampak             |
-| `--format json -o /out/...` | simpan hasil terstruktur untuk dilampirkan      |
+| Opsi | Arti |
+|---|---|
+| `fs` | mode pindai filesystem/direktori |
+| `--scanners vuln` | hanya cari kerentanan (bukan misconfig/license) |
+| `--severity HIGH,CRITICAL` | saring agar fokus ke yang berdampak |
+| `--format json -o /out/...` | simpan hasil terstruktur untuk dilampirkan |
 
 Jalankan sekali lagi dengan format tabel supaya mudah dibaca manusia:
 
 ```bash
 docker run --rm \
-  -v "$PWD/ds-<NIM>-target:/src" \
+  -v "$PWD/ds-<NIM>-target:/ds-<NIM>-target" \
   -v "$PWD/labs/LK03-sca-secret:/out" \
   -v trivy-cache:/root/.cache/ \
   aquasec/trivy fs --scanners vuln --severity HIGH,CRITICAL \
-  --format table -o /out/trivy-fs.txt /src
+  --format table -o /out/trivy-fs.txt /ds-<NIM>-target
 
 head -40 labs/LK03-sca-secret/trivy-fs.txt
 ```
 
+Kalau berhasil, ringkasannya akan menyebut target `package-lock.json` bertipe `npm` dengan jumlah
+temuan (puluhan). Bila yang muncul justru tanda `-` alias `Not scanned`, berarti lock file di C.1
+belum terbentuk.
+
+> Secara bawaan Trivy **menyembunyikan** dependensi yang hanya dipakai saat pengembangan/pengujian.
+> Untuk melihatnya juga, tambahkan `--include-dev-deps`. Bandingkan jumlah temuannya dan jelaskan di
+> laporan mengapa dependensi dev biasanya berisiko lebih rendah (tidak ikut ke produksi).
+
 > Alternatif dengan Grype (boleh dipakai sebagai pembanding):
->
 > ```bash
-> docker run --rm -v "$PWD/ds-<NIM>-target:/src" anchore/grype dir:/src -o table
+> docker run --rm -v "$PWD/ds-<NIM>-target:/ds-<NIM>-target" anchore/grype dir:/ds-<NIM>-target -o table
 > ```
->
 > Membandingkan dua scanner itu latihan bagus: hasilnya sering **tidak identik** karena basis data dan
 > cara pencocokannya berbeda.
 
@@ -194,7 +222,6 @@ ada di `package.json`. Catat perbedaan ini di laporan — inilah alasan kedua su
 ## Bagian E — Secret scanning
 
 ### E.1 Pindai riwayat git
-
 Ini mode terpenting: Gitleaks menelusuri seluruh commit yang tersedia.
 
 ```bash
@@ -211,7 +238,6 @@ docker run --rm \
 opsi ini** — jangan sampai laporan tugas justru menjadi tempat bocornya kredensial.
 
 ### E.2 Pindai berkas saat ini saja
-
 Sebagai pembanding, jalankan tanpa histori:
 
 ```bash
@@ -226,6 +252,18 @@ docker run --rm \
 
 Bandingkan jumlah temuan kedua mode itu dan jelaskan selisihnya di laporan. Kalau histori menghasilkan
 lebih banyak temuan, itu bukti nyata bahwa menghapus secret saja tidak cukup.
+
+**Patokan hasil.** Dengan `--depth 200`, angka yang wajar muncul kira-kira seperti ini (persisnya akan
+berbeda tergantung kedalaman clone dan versi repo saat Anda mengunduh):
+
+| Pemindaian | Perkiraan jumlah temuan |
+|---|---|
+| Trivy filesystem (HIGH+CRITICAL) | sekitar 45–50 |
+| Gitleaks mode histori | ratusan hingga seribuan |
+| Gitleaks mode worktree | puluhan |
+
+Selisih besar antara histori dan worktree itulah inti pelajarannya. Jika angka Anda jauh berbeda —
+misalnya nol — periksa lagi langkah C.1 dan kedalaman clone di B.1.
 
 > Catatan: Gitleaks mengembalikan **exit code bukan nol** ketika menemukan secret. Itu perilaku normal
 > (dan justru berguna untuk gate CI/CD nanti di CB2), bukan tanda perintahnya gagal.
@@ -254,24 +292,11 @@ dampaknya bila berisi daftar dependensi lengkap beserta versinya.
 
 ---
 
-**Patokan hasil.** Dengan `--depth 200`, angka yang wajar muncul kira-kira seperti ini (persisnya akan
-berbeda tergantung kedalaman clone dan versi repo saat Anda mengunduh):
-
-| Pemindaian | Perkiraan jumlah temuan |
-|---|---|
-| Trivy filesystem (HIGH+CRITICAL) | sekitar 45–50 |
-| Gitleaks mode histori | ratusan hingga seribuan |
-| Gitleaks mode worktree | puluhan |
-
-Selisih besar antara histori dan worktree itulah inti pelajarannya. Jika angka Anda jauh berbeda —
-misalnya nol — periksa lagi langkah C.1 dan kedalaman clone di B.1.
-
 ## Bagian G — Triage dan prioritisasi
 
 Scanner menghasilkan daftar mentah. Tugas Anda adalah mengubahnya menjadi keputusan.
 
 ### G.1 Ringkas jumlah temuan
-
 ```bash
 python3 - <<'PY'
 import json, collections, pathlib
@@ -294,7 +319,6 @@ PY
 ```
 
 ### G.2 Nilai tiap temuan
-
 Untuk setiap temuan yang akan masuk laporan, tanyakan tiga hal:
 
 1. **Seberapa parah?** Lihat severity dan skor CVSS.
@@ -306,14 +330,13 @@ Temuan dengan severity tinggi **dan** ada versi perbaikan **dan** komponennya te
 prioritas teratas.
 
 ### G.3 Susun tabel triage
-
 Buat tabel di laporan Anda dengan bentuk berikut (isi dari hasil scan Anda sendiri):
 
-| ID     | Temuan                            | Tipe       | Severity | Versi terpasang | Versi perbaikan | OWASP   | Prioritas | Rekomendasi                               |
-| ------ | --------------------------------- | ---------- | -------- | --------------- | --------------- | ------- | --------- | ----------------------------------------- |
-| SCA-01 | CVE-XXXX-XXXX pada `nama-paket`   | dependency | CRITICAL | 4.17.15         | 4.17.21         | A06     | Tinggi    | naikkan versi paket                       |
-| IMG-01 | CVE-XXXX-XXXX pada `openssl`      | OS package | HIGH     | 1.1.1n          | 1.1.1t          | A06     | Sedang    | perbarui base image                       |
-| SEC-01 | Token ditemukan di histori commit | secret     | HIGH     | —               | —               | A02/A05 | Tinggi    | rotasi kredensial, pindah ke secret store |
+| ID | Temuan | Tipe | Severity | Versi terpasang | Versi perbaikan | OWASP | Prioritas | Rekomendasi |
+|---|---|---|---|---|---|---|---|---|
+| SCA-01 | CVE-XXXX-XXXX pada `nama-paket` | dependency | CRITICAL | 4.17.15 | 4.17.21 | A06 | Tinggi | naikkan versi paket |
+| IMG-01 | CVE-XXXX-XXXX pada `openssl` | OS package | HIGH | 1.1.1n | 1.1.1t | A06 | Sedang | perbarui base image |
+| SEC-01 | Token ditemukan di histori commit | secret | HIGH | — | — | A02/A05 | Tinggi | rotasi kredensial, pindah ke secret store |
 
 Minimal **10 temuan** ter-triage. Ingat ketentuan fokus per-NIM di KEBIJAKAN: sertakan setidaknya
 2 temuan pada kategori OWASP **Primary** Anda dan 1 pada **Secondary**, dengan analisis lebih dalam
@@ -350,28 +373,26 @@ unggahan besar di akhir.
 ---
 
 ## Luaran
-
 - `labs/LK03-sca-secret/trivy-fs.json` dan `trivy-fs.txt`
 - `labs/LK03-sca-secret/trivy-image.json` dan `trivy-image.txt`
 - `labs/LK03-sca-secret/gitleaks-history.json` dan `gitleaks-worktree.json`
 - `labs/LK03-sca-secret/README.md` berisi triage, perbandingan, dan refleksi
 
 ## Kriteria penilaian
-
 Rubrik lengkap ada di KEBIJAKAN §4. Ringkasnya untuk LK ini:
 
-| Aspek                                    | Bobot |
-| ---------------------------------------- | ----- |
-| Refleksi dan pemahaman (kata sendiri)    | 30%   |
-| Kebenaran teknis dan bukti ber-watermark | 30%   |
-| Demo/viva bila diminta                   | 20%   |
-| Dokumentasi dan ketepatan pemetaan OWASP | 15%   |
-| Kerapian repo dan commit bertahap        | 5%    |
+| Aspek | Bobot |
+|---|---|
+| Refleksi dan pemahaman (kata sendiri) | 30% |
+| Kebenaran teknis dan bukti ber-watermark | 30% |
+| Demo/viva bila diminta | 20% |
+| Dokumentasi dan ketepatan pemetaan OWASP | 15% |
+| Kerapian repo dan commit bertahap | 5% |
 
 ## Checklist submit
-
 - [ ] Source di-clone ke folder `ds-<NIM>-target` (watermark ikut di path hasil scan)
-- [ ] Trivy filesystem menghasilkan JSON dan tabel
+- [ ] `package-lock.json` berhasil dibuat (langkah C.1)
+- [ ] Trivy filesystem menghasilkan JSON dan tabel, dan targetnya benar-benar terpindai (bukan `-`)
 - [ ] Trivy image menghasilkan JSON dan tabel
 - [ ] Gitleaks dijalankan dua mode (histori dan worktree), memakai `--redact`
 - [ ] Minimal 10 temuan ter-triage dan dipetakan ke OWASP
@@ -382,8 +403,12 @@ Rubrik lengkap ada di KEBIJAKAN §4. Ringkasnya untuk LK ini:
 - [ ] Sudah `git push`
 
 ## Troubleshooting
-
-- **Scan pertama sangat lama.** Trivy sedang mengunduh basis data kerentanan. Pakai volume
+- **Hasil scan filesystem kosong / tabelnya berisi `-` (`Not scanned`).** Ini kasus paling sering.
+  Di log Trivy akan terlihat `Number of language-specific files num=0` dan
+  `Supported files for scanner(s) not found`. Artinya tidak ada lock file. Jalankan langkah C.1 untuk
+  membuat `package-lock.json`, lalu ulangi pemindaian. Ingat: `package.json` saja tidak cukup karena
+  hanya memuat rentang versi.
+- **Scan pertama sangat lama.** Trivy sedang mengunduh basis data kerentanan (±112 MB). Pakai volume
   `trivy-cache` agar scan berikutnya cepat.
 - **Berkas hasil tidak muncul di laptop.** Hampir selalu karena path `-o` menunjuk ke dalam container,
   bukan ke folder yang di-mount. Pastikan output diarahkan ke `/out/...` dan `/out` sudah di-mount ke

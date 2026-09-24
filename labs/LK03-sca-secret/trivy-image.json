@@ -3,8 +3,8 @@
   "Trivy": {
     "Version": "0.73.0"
   },
-  "ReportID": "01a089f8-b50e-7903-bf9d-0ae34f447d3f",
-  "CreatedAt": "2026-09-10T06:19:33.00660472Z",
+  "ReportID": "01a0c83a-ea24-7b52-a3be-3a0538292c3c",
+  "CreatedAt": "2026-09-22T08:28:19.364743838Z",
   "ArtifactID": "sha256:bf030013b6b86ae5a0ca79a77663445674fe66a3930c1aca50f5b3a384ec1aec",
   "ArtifactName": "bkimminich/juice-shop",
   "ArtifactType": "container_image",
@@ -2045,9 +2045,12 @@
             "CWE-770"
           ],
           "VendorSeverity": {
+            "alma": 3,
             "amazon": 3,
+            "oracle-oval": 3,
             "photon": 3,
             "redhat": 3,
+            "rocky": 3,
             "ubuntu": 2
           },
           "CVSS": {
@@ -2058,10 +2061,43 @@
           },
           "References": [
             "http://www.openwall.com/lists/oss-security/2026/08/13/4",
+            "https://access.redhat.com/errata/RHSA-2026:67165",
             "https://access.redhat.com/security/cve/CVE-2026-14456",
+            "https://bugzilla.redhat.com/2515348",
+            "https://bugzilla.redhat.com/2517559",
+            "https://bugzilla.redhat.com/2517560",
+            "https://bugzilla.redhat.com/2517561",
+            "https://bugzilla.redhat.com/2517562",
+            "https://bugzilla.redhat.com/2517564",
+            "https://bugzilla.redhat.com/2517565",
+            "https://bugzilla.redhat.com/2517566",
+            "https://bugzilla.redhat.com/2517570",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2515348",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517559",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517560",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517561",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517562",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517564",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517565",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517566",
+            "https://bugzilla.redhat.com/show_bug.cgi?id=2517570",
+            "https://creativecommons.org/licenses/by/4.0/",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-14456",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-14457",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-18798",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-54874",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63072",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63073",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63074",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63075",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2026-63076",
+            "https://errata.almalinux.org/9/ALSA-2026-67165.html",
+            "https://errata.rockylinux.org/RLSA-2026:67165",
             "https://github.com/openssl/openssl/commit/08e7756c3900bcfd77a720e7b74e27d6e4ed01a9",
             "https://github.com/openssl/openssl/commit/4084152e040329ca0194c4c1750b9b46d00a5b6b",
             "https://github.com/openssl/openssl/commit/f2f1465f2d2e5c61dfeac4d20fd093797d821139",
+            "https://linux.oracle.com/cve/CVE-2026-14456.html",
+            "https://linux.oracle.com/errata/ELSA-2026-67165-0.html",
             "https://nvd.nist.gov/vuln/detail/CVE-2026-14456",
             "https://openssl-library.org/news/secadv/20260813.txt",
             "https://ubuntu.com/security/notices/USN-8678-1",
@@ -14680,7 +14716,7 @@
             "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Anpm"
           },
           "Fingerprint": "sha256:9cd23f5d2ed6ba3700b33e79113251cf3067152c7e83d2c84eaa434ca2f9f2f3",
-          "Title": "crypto-js is a JavaScript library of crypto standards. Versions of cry ...",
+          "Title": "crypto-js: crypto-js: Insufficient Entropy in Cryptographic Secret Generation via Vulnerable CryptoJS Dependency Chain",
           "Description": "crypto-js is a JavaScript library of crypto standards. Versions of crypto-js prior to 4.0.0 generate randomness in CryptoJS.lib.WordArray.random() using a custom variation of the Multiply-With-Carry pseudorandom number generator, seeded from Math.random(), instead of a cryptographically secure source. This generator was introduced in version 3.1.2-4 and remained present in nearly every 3.x release. Nominal requests for 128 or 256 bits of entropy through this function produce effective search spaces of approximately 2 to the 39th and 2 to the 47th possibilities, small enough to enumerate on commodity hardware. Downstream wallet applications that used CryptoJS.lib.WordArray.random() as the entropy source for BIP39 recovery phrases are affected, and an attacker who enumerates the reduced output space can recover the resulting private keys and control the associated funds. This issue is fixed in version 4.0.0.",
           "Severity": "CRITICAL",
           "CweIDs": [
@@ -14689,19 +14725,27 @@
             "CWE-338"
           ],
           "VendorSeverity": {
-            "ghsa": 4
+            "ghsa": 4,
+            "redhat": 3
           },
           "CVSS": {
             "ghsa": {
               "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
               "V3Score": 9.1
+            },
+            "redhat": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:H/A:H",
+              "V3Score": 9
             }
           },
           "References": [
+            "https://access.redhat.com/security/cve/CVE-2026-71851",
             "https://github.com/brix/crypto-js",
             "https://github.com/brix/crypto-js/commit/b405ff597fb3ac76a7bdfbc72dca10ba1079b1d5",
             "https://github.com/brix/crypto-js/security/advisories/GHSA-rg76-677x-56q9",
-            "https://www.coinspect.com/blog/ill-bloom-investigation"
+            "https://nvd.nist.gov/vuln/detail/CVE-2026-71851",
+            "https://www.coinspect.com/blog/ill-bloom-investigation",
+            "https://www.cve.org/CVERecord?id=CVE-2026-71851"
           ],
           "PublishedDate": "2026-08-07T19:18:54.39Z",
           "LastModifiedDate": "2026-09-09T21:02:22.66Z"
@@ -15023,7 +15067,7 @@
           ],
           "VendorSeverity": {
             "ghsa": 3,
-            "redhat": 3
+            "redhat": 2
           },
           "CVSS": {
             "ghsa": {
@@ -16910,7 +16954,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-69185"
           ],
           "PublishedDate": "2026-08-03T20:17:29.797Z",
-          "LastModifiedDate": "2026-08-03T21:16:41.857Z"
+          "LastModifiedDate": "2026-09-10T20:30:11.423Z"
         },
         {
           "VulnerabilityID": "CVE-2026-59873",
@@ -17617,7 +17661,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-73566"
           ],
           "PublishedDate": "2026-08-13T18:18:19.25Z",
-          "LastModifiedDate": "2026-08-18T02:17:29.253Z"
+          "LastModifiedDate": "2026-09-16T13:42:43.41Z"
         },
         {
           "VulnerabilityID": "CVE-2026-12151",
@@ -17697,6 +17741,8 @@
             "https://access.redhat.com/errata/RHSA-2026:60520",
             "https://access.redhat.com/errata/RHSA-2026:62260",
             "https://access.redhat.com/errata/RHSA-2026:65126",
+            "https://access.redhat.com/errata/RHSA-2026:66488",
+            "https://access.redhat.com/errata/RHSA-2026:66545",
             "https://access.redhat.com/security/cve/CVE-2026-12151",
             "https://bugzilla.redhat.com/2476810",
             "https://bugzilla.redhat.com/2489980",
@@ -17750,7 +17796,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-12151"
           ],
           "PublishedDate": "2026-06-17T17:16:42.37Z",
-          "LastModifiedDate": "2026-09-09T13:18:35.397Z"
+          "LastModifiedDate": "2026-09-11T13:17:05.943Z"
         },
         {
           "VulnerabilityID": "CVE-2026-1526",
@@ -18177,6 +18223,8 @@
             "https://access.redhat.com/errata/RHSA-2026:57590",
             "https://access.redhat.com/errata/RHSA-2026:60520",
             "https://access.redhat.com/errata/RHSA-2026:65126",
+            "https://access.redhat.com/errata/RHSA-2026:66488",
+            "https://access.redhat.com/errata/RHSA-2026:66545",
             "https://access.redhat.com/security/cve/CVE-2026-48779",
             "https://bugzilla.redhat.com/show_bug.cgi?id=2489661",
             "https://github.com/websockets/ws",
@@ -18190,7 +18238,7 @@
             "https://www.cve.org/CVERecord?id=CVE-2026-48779"
           ],
           "PublishedDate": "2026-06-17T13:20:42.887Z",
-          "LastModifiedDate": "2026-09-09T13:20:22.113Z"
+          "LastModifiedDate": "2026-09-11T13:18:14.097Z"
         }
       ]
     },
